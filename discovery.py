@@ -6,7 +6,6 @@ by IP address which can be confusing. This script changes the display
 from IP address to a more recognizable name, declared in an address list. 
 We do this instead of grabbing the device's hostname as we can't change some
 devices' hostnames.
-Original script here: https://gist.github.com/drath/07bdeef0259bd68747a82ff80a5e350c
 Usage notes
 - sudo python3 discovery.py
 - Displays log messages at appropriate times
@@ -28,9 +27,9 @@ Global stuff
 interface = "eth0"
 addressList =  {
   "70:85:c2:a1:ba:3f": "Dalamud",
-  "20:39:56:dd:a6:a9": "Nokia-Android",
+  "20:39:56:dd:a6:a9": "Android-Nokia",
   "98:ee:cb:3a:9e:84": "Acer",
-  "b0:c1:9e:fd:1c:b4": "ZTE-Android",
+  "b0:c1:9e:fd:1c:b4": "Android-ZTE",
   "70:f1:a1:74:ad:97": "HP",
   "ac:ae:19:0c:11:6f": "Roku-Downstairs",
   "b8:3e:59:81:4e:4f": "Roku-Upstairs",
@@ -86,27 +85,34 @@ def handle_dhcp_packet(packet):
         vendor_class_id = get_option(packet[DHCP].options, 'vendor_class_id')
         print(f"Host {hostname} ({packet[Ether].src}) requested {requested_addr}.")
         if (requested_addr):
-            update_hosts_file(requested_addr, packet[Ether].src)
+            update_hosts_file(requested_addr, hostname, packet[Ether].src)
     return
 
 '''
-Update the hosts file with <hostname>-<profile> for hostname
+Update the hosts file with specified name for hostname
+If host's mac address is not present in our address list, use 
 '''
 
-def update_hosts_file(address,macaddr):
+def update_hosts_file(address,hostname,macaddr):
     if macaddr in addressList:
-        copyfile("/etc/hosts", "hosts")
         etchostname = addressList[macaddr]
-        print(f"Updating hostname as: {etchostname} with {address}")
+    elif (hostname):
+        print (f"Host {hostname} ({macaddr}) was not found in list")
+        etchostname = hostname
 
-        hosts = Hosts(path='hosts')
-        hosts.remove_all_matching(name=etchostname)
-        new_entry = HostsEntry(entry_type='ipv4', address=address, names=[etchostname])
-        hosts.add([new_entry])
-        hosts.write()
-        copyfile("hosts", "/etc/hosts")
+    copyfile("/etc/hosts", "hosts")
+    print(f"Updating hostname as: {etchostname} with {address}")
 
-        print(f"Updated Host name for hostsfile is {etchostname}")
+    hosts = Hosts(path='hosts')
+    hosts.remove_all_matching(name=etchostname)
+    new_entry = HostsEntry(entry_type='ipv4', address=address, names=[etchostname])
+    hosts.add([new_entry])
+    hosts.write()
+    copyfile("hosts", "/etc/hosts")
+
+    print(f"Updated Host name for hosts file is {etchostname}")
+
+    return
 
             
 print("Starting\n")

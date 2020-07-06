@@ -15,3 +15,6 @@ This script was developed with some things in mind regarding my network:
 The 'original' script comes from here: https://gist.github.com/drath/07bdeef0259bd68747a82ff80a5e350c - it uses the device's actual hostname in combination with fingerprint data to further identify the device.
 
 I found that approach gave me poor results - some of my devices' hostnames can't be changed, their fingerprint results were messy. I opted instead to just identify mac addresses in my network and associate them with recognizable names.
+
+
+![](https://i.imgur.com/OKTgmhI.jpg)
